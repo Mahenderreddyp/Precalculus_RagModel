@@ -1,0 +1,22 @@
+huggingface-hub
+sentence-transformers
+
+Flask==2.0.1
+Werkzeug==2.2.2
+flask-cors
+
+langchain==0.0.352
+tiktoken
+unstructured
+unstructured[local-pdf]
+unstructured[local-inference]
+
+llama-index
+llama-index-llms-ollama
+llama-index-embeddings-huggingface
+nvidia-cudnn-cu11==8.9.5.29
+torch==2.1.0
+transformers==4.30.2
+
+# manually install below module to get rid of dependency install issues with `requirements.txt`
+# pip install llama-index-vector-stores-chroma

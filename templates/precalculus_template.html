@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precalculus AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Add MathJax for proper math formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        .card {
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        
+        #chat-history {
+            height: 75vh;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .user-message {
+            background-color: #f0f8ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-line;
+        }
+        
+        .assistant-message {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+        
+        /* Reduce spacing between paragraphs */
+        .assistant-message p {
+            margin-bottom: 0.75em;
+        }
+        
+        /* Enhanced math formula styling */
+        .math-formula {
+            font-family: 'STIX Two Math', 'Cambria Math', 'Times New Roman', Times, serif;
+            font-size: 1.05em;
+        }
+        
+        /* Enhanced subscript styling */
+        .subscript {
+            font-size: 0.8em;
+            vertical-align: sub;
+        }
+        
+        /* Bold text style */
+        .bold-text {
+            font-weight: bold;
+        }
+        
+        /* Question container styling */
+        .question-container {
+            margin-bottom: 1.5em;
+            padding: 1em;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fc;
+        }
+        
+        /* Solution container styling */
+        .solution-container {
+            margin-top: 0.75em;
+            margin-bottom: 0.75em;
+        }
+        
+        /* Step number styling */
+        .step-number {
+            font-weight: bold;
+            margin-right: 0.5em;
+        }
+        
+        /* Problem styling */
+        .problem {
+            margin: 15px 0;
+            padding: 12px;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .problem-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #007bff;
+        }
+        
+        .problem-solution {
+            margin-top: 8px;
+        }
+        
+        /* Steps styling with reduced spacing */
+        .step {
+            margin: 0.5em 0 0.5em 1em;
+            line-height: 1.4;
+        }
+        
+        /* Section divider */
+        .section-divider {
+            margin: 15px 0;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        /* Enhanced section headers with reduced margin */
+        .section-header {
+            color: #0056b3;
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.3em;
+        }
+        
+        /* Improve nested content spacing */
+        .question-container > *:not(.section-header) {
+            margin-bottom: 0.75em;
+        }
+        
+        /* Main container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            height: 100%;
+        }
+        
+        /* Content area */
+        .content-area {
+            height: 100%;
+        }
+        
+        h1 {
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid main-container mt-4">
+        <h1 class="text-center">Precalculus AI Assistant</h1>
+        
+        <div class="row">
+            <div class="col-md-3 sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Ask a Question</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="question-form">
+                            <div class="mb-3">
+                                <label for="mode-select" class="form-label">Mode:</label>
+                                <select class="form-select" id="mode-select">
+                                    <option value="review">Review Topics</option>
+                                    <option value="practice">Practice Questions</option>
+                                    <option value="history">History of Math</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="topic-select" class="form-label">Topic:</label>
+                                <select class="form-select" id="topic-select">
+                                    <option value="Cartesian Plane and Functions">Cartesian Plane and Functions</option>
+                                    <option value="Lines">Lines</option>
+                                    <option value="Polynomials and Rational Functions">Polynomials and Rational Functions</option>
+                                    <option value="Inequalities">Inequalities</option>
+                                    <option value="Exponential and Logarithmic Functions">Exponential and Logarithmic Functions</option>
+                                    <option value="Trigonometry">Trigonometry</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="question-input" class="form-label">Your Question:</label>
+                                <textarea class="form-control" id="question-input" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9 content-area">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Conversation</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="chat-history">
+                            <p class="p-3">Welcome to the Precalculus AI Assistant! Please ask a question to get started.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate a random user ID for tracking purposes
+        const userId = 'user_' + Math.random().toString(36).substring(2, 15);
+        let currentTopic = ""; 
+        let currentMode = "";
+
+        document.getElementById('question-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const question = document.getElementById('question-input').value;
+            const mode = document.getElementById('mode-select').value;
+            const topic = document.getElementById('topic-select').value;
+            
+            // Update current topic and mode
+            currentTopic = topic;
+            currentMode = mode;
+            
+            addMessageToChat('user', question);
+            
+            // Display a loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'assistant-message';
+            loadingDiv.innerHTML = 'Thinking...';
+            loadingDiv.id = 'loading-message';
+            document.getElementById('chat-history').appendChild(loadingDiv);
+            
+            try {
+                const response = await fetch('/api/question', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        user_id: userId,
+                        mode: mode,
+                        topic: topic
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove the loading message
+                document.getElementById('loading-message').remove();
+                
+                // Add the response to the chat
+                if (data.error) {
+                    addMessageToChat('assistant', `Error: ${data.error}`);
+                } else {
+                    // Format the message for better readability
+                    const formattedAnswer = formatProblems(data.answer);
+                    addMessageToChat('assistant', formattedAnswer, true);
+                }
+            } catch (error) {
+                // Remove the loading message
+                document.getElementById('loading-message').remove();
+                
+                addMessageToChat('assistant', `Error: ${error.message}`);
+            }
+            
+            // Clear the input field
+            document.getElementById('question-input').value = '';
+        });
+        
+        function formatProblems(text) {
+            // First processing pass: combine split elements by checking line by line
+            let lines = text.split('\n');
+            let newLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Fix Issue #1, #3, #4, #7: standalone # symbols
+                if (/^#+$/.test(line) && i + 1 < lines.length) {
+                    // Combine with next line and add to new lines
+                    newLines.push(`${line} ${lines[i+1].trim()}`);
+                    i++; // Skip the next line since we've combined it
+                }
+                // Fix Issue #5: Section titles like 'Explanations'
+                else if (/^(Explanations|Alternative Approach|Key Concepts( Being Applied)?|Solution)$/.test(line) && i + 1 < lines.length) {
+                    newLines.push(`# ${line}`);
+                    i++; // Skip the next line
+                }
+                // Fix Issue #2, #6: standalone numbers
+                else if (/^\d+\.$/.test(line) && i + 1 < lines.length) {
+                    // Combine with next line and add to new lines
+                    newLines.push(`${line} ${lines[i+1].trim()}`);
+                    i++; // Skip the next line since we've combined it
+                }
+                // Fix Step X: on its own line
+                else if (/^Step \d+:$/.test(line) && i + 1 < lines.length) {
+                    // Combine with next line
+                    newLines.push(`${line} ${lines[i+1].trim()}`);
+                    i++; // Skip the next line
+                }
+                else {
+                    newLines.push(lines[i]);
+                }
+            }
+            
+            // Join back into text for second processing pass
+            text = newLines.join('\n');
+            
+            // Second processing pass: apply regex replacements
+            
+            // Fix standalone # that should precede content
+            text = text.replace(/^#\s*$/gm, '');
+            text = text.replace(/#\s*\n+\s*([A-Za-z])/gm, '# $1');
+            
+            // Fix numbered items (ensures numbers and content stay together)
+            text = text.replace(/^(\d+)\.\s*$/gm, '');
+            text = text.replace(/^(\d+)\.\s*\n+/gm, '$1. ');
+            
+            // Format section headers
+            text = text.replace(/^# Question (\d+):/gm, '<h3 class="section-header">Question $1:</h3>');
+            text = text.replace(/^Question (\d+):/gm, '<h3 class="section-header">Question $1:</h3>');
+            text = text.replace(/^# Step-by-Step Solution( for Question \d+)?:/gm, '<h4 class="section-header">Step-by-Step Solution$1:</h4>');
+            text = text.replace(/^# Explanations( for Question \d+)?:/gm, '<h4 class="section-header">Explanations$1:</h4>');
+            text = text.replace(/^# Alternative Approach( for Question \d+)?:/gm, '<h4 class="section-header">Alternative Approach$1:</h4>');
+            text = text.replace(/^# Key Concepts( Being Applied)?( for Question \d+)?:/gm, '<h4 class="section-header">Key Concepts$1$2:</h4>');
+            
+            // Fix excessive spacing - reduce to at most one blank line
+            text = text.replace(/\n{3,}/g, '\n\n');
+            
+            // Other formatting
+            text = text.replace(/---/g, '<hr class="section-divider">');
+            text = text.replace(/(\d+)\.\s*\n+\s*/g, '$1. ');
+            
+            return text;
+        }
+
+        function addMessageToChat(sender, message, processFormatting = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' ? 'user-message' : 'assistant-message';
+            
+            // If we need to process formatting
+            if (processFormatting) {
+                // Apply the formatProblems function first
+                message = formatProblems(message);
+                
+                // Fix any remaining "# Heading" issues by converting them to HTML
+                message = message.replace(/^# ([A-Za-z][^\n]+)$/gm, '<h3 class="section-header">$1</h3>');
+                message = message.replace(/^## ([A-Za-z][^\n]+)$/gm, '<h4 class="problem-title">$1</h4>');
+                
+                // Apply additional formatting for mathematical expressions
+                
+                // Format subscripts and superscripts
+                message = message.replace(/([a-zA-Z])_(\d+)/g, '$1<sub>$2</sub>');
+                
+                // Format fractions and mathematical operations
+                message = message.replace(/\(([^)]+)\s*-\s*([^)]+)\)\s*\/\s*\(([^)]+)\s*-\s*([^)]+)\)/g, 
+                    '<span class="math-formula">($1 - $2) / ($3 - $4)</span>');
+                
+                // Bold text formatting
+                message = message.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                message = message.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+                
+                // Format steps with nice styling
+                message = message.replace(/\n(\d+)\. (.*?)$/gm, '<div class="step"><span class="step-number">$1.</span> $2</div>');
+                message = message.replace(/Step (\d+):(.*?)$/gm, '<div class="step-title"><strong>Step $1:</strong>$2</div>');
+                
+                // Format math symbols and expressions
+                message = message.replace(/\|([^|]+)\|/g, '\\(|$1|\\)');
+                message = message.replace(/√([a-zA-Z0-9()]+)/g, '\\(\\sqrt{$1}\\)');
+                message = message.replace(/([a-zA-Z0-9])²/g, '\\($1^2\\)');
+                message = message.replace(/([a-zA-Z0-9])³/g, '\\($1^3\\)');
+                
+                // Format slope formula and other common math expressions
+                message = message.replace(/m\s*=\s*\(\s*y_2\s*-\s*y_1\s*\)\s*\/\s*\(\s*x_2\s*-\s*x_1\s*\)/g, 
+                    '\\(m = \\frac{y_2 - y_1}{x_2 - x_1}\\)');
+                
+                // Wrap each question in a container for better styling
+                message = message.replace(/<h3 class="section-header">Question (\d+):<\/h3>/g, 
+                    '<div class="question-container"><h3 class="section-header">Question $1:</h3>');
+                message = message.replace(/<hr class="section-divider">/g, '</div><hr class="section-divider">');
+                
+                // Add closing div to the last question if needed
+                if (message.includes('<div class="question-container">') && 
+                    !message.endsWith('</div>')) {
+                    message += '</div>';
+                }
+                
+                // Reduce excessive spacing in output
+                message = message.replace(/<br><br><br>/g, '<br><br>');
+                message = message.replace(/<p>\s*<\/p>/g, '');
+            }
+            
+            messageDiv.innerHTML = message;
+            
+            // Add feedback buttons for assistant messages
+            if (sender === 'assistant') {
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = 'mt-4';
+                feedbackDiv.innerHTML = `
+                    <button class="btn btn-sm btn-outline-success feedback-btn" onclick="sendFeedback(true, '${currentTopic}', '${currentMode}')">Helpful</button>
+                    <button class="btn btn-sm btn-outline-danger feedback-btn" onclick="sendFeedback(false, '${currentTopic}', '${currentMode}')">Not Helpful</button>
+                `;
+                messageDiv.appendChild(feedbackDiv);
+            }
+            
+            document.getElementById('chat-history').appendChild(messageDiv);
+            
+            // Scroll to the bottom of the chat
+            const chatHistory = document.getElementById('chat-history');
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            
+            // If we processed math, trigger MathJax to typeset the new content
+            if (processFormatting && window.MathJax) {
+                MathJax.typeset([messageDiv]);
+            }
+        }
+
+        async function sendFeedback(isHelpful, topic, mode) {
+            try {
+                await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        helpful: isHelpful,
+                        user_id: userId,
+                        topic: topic,
+                        mode: mode
+                    })
+                });
+                
+                alert(isHelpful ? 'Thank you for your positive feedback!' : 'Thank you for your feedback. We\'ll try to improve.');
+            } catch (error) {
+                console.error('Error sending feedback:', error);
+                alert('Error sending feedback. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
